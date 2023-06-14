@@ -1,5 +1,4 @@
-import asyncio
-from asyncio import sleep
+from time import sleep
 
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException
@@ -9,6 +8,9 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select, WebDriverWait
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.common.exceptions import MoveTargetOutOfBoundsException
+
 
 service = ChromeService(executable_path="C:\webdrivers\chromedriver.exe")
 d = webdriver.Chrome(service=service)
@@ -50,14 +52,33 @@ afstanden = d.find_elements(By.CLASS_NAME, "distance__option")
 afstanden[3].click()
 # afstand[0].click()
 
-delay = 3  # seconds
+delay = 10  # seconds
+actions = ActionChains(d)
+
 try:
     myElem = WebDriverWait(d, delay).until(
         EC.presence_of_element_located((By.XPATH, "//button[@class='cell cell--name']"))
     )
     data_entries = d.find_elements(By.XPATH, "//button[@class='cell cell--name']")
-    print(len(data_entries))
-    print("Page is ready!")
+    y_position = 0
+    for i, entry in enumerate(data_entries):
+        
+        try:
+            actions.move_to_element(entry).perform()
+            entry.click()
+            print(f"{i}:{entry.text}")
+            entry.click()
+            sleep(3)
+        except MoveTargetOutOfBoundsException:
+            y_position += 500
+            d.execute_script('window.scrollTo(0, ' + str(y_position) + ');')
+            actions.move_to_element(entry).perform()
+            entry.click()
+            print(f"{i}:{entry.text}")
+            entry.click()
+            sleep(3)
+        
+
 except TimeoutException:
     print("Loading took too much time!")
 
