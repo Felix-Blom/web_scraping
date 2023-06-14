@@ -62,21 +62,14 @@ try:
     data_entries = d.find_elements(By.XPATH, "//button[@class='cell cell--name']")
     y_position = 0
     for i, entry in enumerate(data_entries):
-        
-        try:
-            actions.move_to_element(entry).perform()
-            entry.click()
-            print(f"{i}:{entry.text}")
-            entry.click()
-            sleep(3)
-        except MoveTargetOutOfBoundsException:
-            y_position += 500
-            d.execute_script('window.scrollTo(0, ' + str(y_position) + ');')
-            actions.move_to_element(entry).perform()
-            entry.click()
-            print(f"{i}:{entry.text}")
-            entry.click()
-            sleep(3)
+        while not entry.is_displayed():
+            d.execute_script("arguments[0].scrollIntoView();", entry)
+            sleep(1)
+        actions.move_to_element(entry).perform()
+        entry.click()
+        print(f"{i}:{entry.text}")
+        entry.click()
+        sleep(3)
         
 
 except TimeoutException:
