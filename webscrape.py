@@ -62,8 +62,6 @@ try:
     data_entries = d.find_elements(By.XPATH, "//button[@class='cell cell--name']")
     y_position = 0
     for i, entry in enumerate(data_entries):
-        if i == 12:
-            pass
         try:
             d.execute_script("arguments[0].scrollIntoView({ behavior: 'smooth', block: 'center' });", entry)
             actions.move_to_element(entry).perform()
