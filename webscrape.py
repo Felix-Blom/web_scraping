@@ -11,7 +11,7 @@ from selenium.webdriver.support.ui import Select, WebDriverWait
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.common.exceptions import MoveTargetOutOfBoundsException
 
-SPEC_ITER = 12
+SPEC_ITER = 15
  
 service = ChromeService(executable_path="C:\webdrivers\chromedriver.exe")
 d = webdriver.Chrome(service=service)
@@ -72,47 +72,50 @@ try:
     )
     data_entries = d.find_elements(By.XPATH, "//button[@class='cell cell--name']")
     for i, entry in enumerate(data_entries):
-        if i is len(data_entries) - 1:
-            break
-        try:
-            d.execute_script("arguments[0].scrollIntoView({ behavior: 'smooth', block: 'center' });", entry)
-            actions.move_to_element(entry).perform()
-            entry.click()
-            LOCATIE = entry.text
-            """TEL NUMBER"""
+        if i == 4:
+            print("DEZE WERKT NIET")
+        else:
+            if i is len(data_entries) - 1:
+                break
             try:
-                # Wait for information to load    
-                myElem = WebDriverWait(d, delay).until(
-                    EC.presence_of_element_located((By.CLASS_NAME, "details__contact__phone")))
-                TEL_NUMBER = d.find_element(By.CLASS_NAME, "details__contact__phone").get_attribute("href").replace("tel:", "")
-            except TimeoutException:
-                TEL_NUMBER = "Not available"
+                d.execute_script("arguments[0].scrollIntoView({ behavior: 'smooth', block: 'center' });", entry)
+                actions.move_to_element(entry).perform()
+                entry.click()
+                LOCATIE = entry.text
+                """TEL NUMBER"""
+                try:
+                    # Wait for information to load    
+                    myElem = WebDriverWait(d, delay).until(
+                        EC.presence_of_element_located((By.CLASS_NAME, "details__contact__phone")))
+                    TEL_NUMBER = d.find_element(By.CLASS_NAME, "details__contact__phone").get_attribute("href").replace("tel:", "")
+                except TimeoutException:
+                    TEL_NUMBER = "Not available"
 
-            """ADRES"""
-            try:
-                # Wait for information to load    
-                myElem = WebDriverWait(d, 2).until(EC.presence_of_element_located((By.XPATH, "//div[@class='details__gridcol']//p")))
-                ADRES = d.find_element(By.XPATH, "//div[@class='details__gridcol']//p").get_attribute("textContent")                  
-            except TimeoutException:
-                ADRES = "Not available"
+                """ADRES"""
+                try:
+                    # Wait for information to load    
+                    myElem = WebDriverWait(d, 2).until(EC.presence_of_element_located((By.XPATH, "//div[@class='details__gridcol']//p")))
+                    ADRES = d.find_element(By.XPATH, "//div[@class='details__gridcol']//p").get_attribute("textContent")                  
+                except TimeoutException:
+                    ADRES = "Not available"
 
-            """EMAIL"""
-            try:
-                myElem = WebDriverWait(d, 0.5).until(EC.presence_of_element_located((By.CLASS_NAME, "details__contact__email")))
-                EMAIL = d.find_element(By.CLASS_NAME, "details__contact__email").get_attribute("href").replace("mailto:", "")
+                """EMAIL"""
+                try:
+                    myElem = WebDriverWait(d, 0.5).until(EC.presence_of_element_located((By.CLASS_NAME, "details__contact__email")))
+                    EMAIL = d.find_element(By.CLASS_NAME, "details__contact__email").get_attribute("href").replace("mailto:", "")
+                    
+                except TimeoutException: 
+                    EMAIL = "Not available"
                 
-            except TimeoutException: 
-                EMAIL = "Not available"
-            
-            LOCATIES.append(LOCATIE)
-            ADRESSEN.append(ADRES)
-            TEL_NUMBERS.append(TEL_NUMBER)
-            EMAILS.append(EMAIL)
-            entry.click()
-            sleep(3)
+                LOCATIES.append(LOCATIE)
+                ADRESSEN.append(ADRES)
+                TEL_NUMBERS.append(TEL_NUMBER)
+                EMAILS.append(EMAIL)
+                entry.click()
+                sleep(3)
 
-        except MoveTargetOutOfBoundsException:
-            print(f"Unable to scroll to entry {i}")
+            except MoveTargetOutOfBoundsException:
+                print(f"Unable to scroll to entry {i}")
 
         print(f"Iteratie {i}, Locatie: {LOCATIE}, Adres: {ADRES}, TelNR: {TEL_NUMBER}, Mail: {EMAIL}")
 
@@ -134,6 +137,8 @@ df = pd.DataFrame(data)
 
 if SPEC_ITER == 12:
     df.to_csv("AHDH_psych.csv", index=False)
+elif SPEC_ITER == 13:
+    df.to_csv("Psychiater_Alcohol_Drugs.csv", index= False)
 else:
     df.to_csv(f"{SPECIALIZATION.replace(' ', '')}.csv", index=False)
 
@@ -142,7 +147,17 @@ if SPEC_ITER == 0:
     df.to_excel("cbr_info.xlsx", index=False, sheet_name=SPECIALIZATION)
 else:
     filename = 'cbr_info.xlsx'
-    sheet_name = SPECIALIZATION
+    if SPEC_ITER == 12:
+        sheet_name = "ADHD_Psychiater"
+
+
+    elif SPEC_ITER == 13: 
+        sheet_name = "Psychiater_Alcohol_Drugs"
+
+    elif SPEC_ITER == 14:
+        sheet_name = "Cognitief_Specialist"
+    else:
+        sheet_name = SPECIALIZATION
     with pd.ExcelWriter(filename, engine='openpyxl', mode='a') as writer:
         # Write the DataFrame to a new sheet
         df.to_excel(writer, sheet_name=sheet_name, index=False)
