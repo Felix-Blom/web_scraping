@@ -1,4 +1,5 @@
 from time import sleep
+import black
 import pandas as pd
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException
@@ -10,16 +11,18 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select, WebDriverWait
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.common.exceptions import MoveTargetOutOfBoundsException
+from scraper import CBRscraper
 
-SPEC_ITER = 15
- 
+# Initialize chrome driver
 service = ChromeService(executable_path="C:\webdrivers\chromedriver.exe")
 d = webdriver.Chrome(service=service)
 
-d.get(
-    "https://www.cbr.nl/nl/rijbewijs-houden/nl/gezondheidsverklaring/zoek-een-specialist.htm"
-)
+# Initialize scraper
+CBR_url = "https://www.cbr.nl/nl/rijbewijs-houden/nl/gezondheidsverklaring/zoek-een-specialist.htm"
+scraper = CBRscraper(driver=d, weblink= CBR_url)
 
+
+# Wait for website to load
 sleep(5)
 
 """Set Location to Amsterdam"""
@@ -31,12 +34,14 @@ location.send_keys("Amsterdam")
 location.send_keys(Keys.ARROW_DOWN)
 location.send_keys(Keys.ENTER)
 
-"""Set specialisation to something"""
+"""Set specialisation to current specialization"""
+SPEC_ITER = 15
 # Select the correct specialisation
 specialisation_button = d.find_element(
     By.XPATH, "//button[@id='specialists__selector__specialism-button']"
 )
 specialisation_button.click()
+
 
 specialisations = d.find_elements(By.CLASS_NAME, "specialism__option")
 SPECIALIZATION = specialisations[SPEC_ITER].text
