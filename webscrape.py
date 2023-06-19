@@ -1,5 +1,4 @@
 from time import sleep
-import black
 import pandas as pd
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException
